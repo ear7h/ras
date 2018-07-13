@@ -15,10 +15,11 @@ import (
 type Heap struct {
 	Filename string
 
-	cap uint
+	cap uint // max length of file
 	f   *os.File
 }
 
+// Cap returns the maximum length of the file
 func (h Heap) Cap() uint { return h.cap }
 
 // block header
@@ -58,10 +59,13 @@ const heapHeaderLen = 2
 const magicLen = 2
 const heapFirstOffset = heapHeaderLen + blockHeaderLen
 
-var Magic = [...]byte{0xe7, 0x89}
+var Magic = [magicLen]byte{0xe7, 0x89}
 
 type heapHeader struct {
-	magic [2]byte
+	magic [magicLen]byte
+	// version or allocer enum
+	// this would differentiate between linked list
+	// and other kinds of allocers
 }
 
 func (h *Heap) Load() error {
@@ -129,11 +133,12 @@ func (h *Heap) traverse(fn func(addr uint, blk blockHeader) error) error {
 	return trEndIter
 }
 
-// sets the header corresponding with the
+// sets the header corresponding with the address
 func (h *Heap) setHdr(addr uint, blk blockHeader) error {
 	return h.Set(addr-blockHeaderLen, blk.MarshalBinary())
 }
 
+// gets the header corresponding with the address
 func (h *Heap) getHdr(addr uint) (blockHeader, error) {
 	dst := make([]byte, blockHeaderLen)
 
