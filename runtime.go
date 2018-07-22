@@ -1,9 +1,5 @@
 package ras
 
-type Addrer interface {
-	Addr() uint
-}
-
 type Runtime struct {
 	Allocator
 }
@@ -20,7 +16,7 @@ func (r Runtime) NewUint8() (ret Uint8, err error) {
 	return ret, err
 }
 
-func (r Runtime) DerefUint8(addr uint) (Uint8, error) {
+func (r Runtime) Uint8(addr uint) (Uint8, error) {
 	if addr >= r.Cap() {
 		return Uint8{}, ErrSegFault
 	}

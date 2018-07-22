@@ -2,47 +2,42 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 
 	tg "github.com/ear7h/ras/types_gen"
 )
 
 func main() {
-	fmt.Println("// this file is generated")
-	fmt.Println("package ras\n")
+	fmt.Print("// this file is generated\n")
+	fmt.Print("package ras\n\n")
 
-	fmt.Println(`import (
-	"encoding/binary"
-	"math"
-)
+	fmt.Print(`//
+// uints
+//
 `)
-
-	for _, v := range tg.Uints {
-		fmt.Println(tg.Kind{
-			Kind: v,
-			Get: tg.UintGet(tg.BitSizeMap[v]),
-			Set: tg.UintSet(tg.BitSizeMap[v]),
-		})
+	for _, v := range tg.Uints[1:] {
+		fmt.Println(tg.Kind(v))
 	}
 
-	for _, v := range tg.Ints {
-		fmt.Println(tg.Kind{
-			Kind: v,
-			Get: tg.IntGet(tg.BitSizeMap[v]),
-			Set: tg.IntSet(tg.BitSizeMap[v]),
-		})
+	fmt.Print(`//
+// ints
+//
+`)
+	for _, v := range tg.Ints[1:] {
+		fmt.Println(tg.Kind(v))
 	}
 
+	fmt.Print(`//
+// floats
+//
+`)
 	for _, v := range tg.Floats {
-		fmt.Println(tg.Kind{
-			Kind: v,
-			Get: tg.FloatGet(tg.BitSizeMap[v]),
-			Set: tg.FloatSet(tg.BitSizeMap[v]),
-		})
+		fmt.Println(tg.Kind(v))
 	}
 
-	//fmt.Println(tg.Kind{
-	//	Kind: reflect.Bool,
-	//	Get:tg.GetBool(),
-	//	Set: tg.SetBool(),
-	//})
+	fmt.Print(`//
+// bool
+//
+`)
+	fmt.Println(tg.Kind(reflect.Bool))
 }
