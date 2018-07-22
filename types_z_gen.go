@@ -1,2 +1,2 @@
-//go:generate ./types_z_gen.sh
+//go:generate go-proto .
 package ras

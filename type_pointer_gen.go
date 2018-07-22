@@ -1,4 +1,3 @@
-//+build proto
 
 package ras
 

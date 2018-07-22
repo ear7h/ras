@@ -2,13 +2,10 @@
 
 package ras
 
-
 //go:proto ignore
 type B int
-
 //go:proto ignore
 type T Int
-
 //go:proto ignore
 const TSize = Int64Size
 

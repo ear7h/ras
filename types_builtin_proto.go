@@ -32,3 +32,18 @@ func (v T) Set(val B) error {
 	TToBytes(val, byt)
 	return v.a.Set(v.addr, byt)
 }
+//go:proto clear
+
+//go:proto T=Uint,Int B=T.lower
+type T struct {
+	Uint64
+}
+
+func (v T) Get() (B, error) {
+	i, err := v.Uint64.Get()
+	return B(i), err
+}
+
+func (v T) Set(val B) error {
+	return v.Uint64.Set(uint64(val))
+}

@@ -2,6 +2,56 @@
 package ras
 
 //go:proto T=UintN,IntN,Floats,Bool B=T.lower
+type Uint8 struct {
+	addr uint
+	a Allocator
+}
+
+func (v Uint8) Addr() uint {
+	return v.addr
+}
+
+func (v Uint8) SizeOf() uint {
+	return Uint8Size
+}
+
+func (v Uint8) Get() (uint8, error) {
+	byt := make([]byte, Uint8Size)
+	err := v.a.Get(v.addr, byt)
+	return BytesToUint8(byt), err
+
+}
+
+func (v Uint8) Set(val uint8) error {
+	byt := make([]byte, Uint8Size)
+	Uint8ToBytes(val, byt)
+	return v.a.Set(v.addr, byt)
+}
+type Uint16 struct {
+	addr uint
+	a Allocator
+}
+
+func (v Uint16) Addr() uint {
+	return v.addr
+}
+
+func (v Uint16) SizeOf() uint {
+	return Uint16Size
+}
+
+func (v Uint16) Get() (uint16, error) {
+	byt := make([]byte, Uint16Size)
+	err := v.a.Get(v.addr, byt)
+	return BytesToUint16(byt), err
+
+}
+
+func (v Uint16) Set(val uint16) error {
+	byt := make([]byte, Uint16Size)
+	Uint16ToBytes(val, byt)
+	return v.a.Set(v.addr, byt)
+}
 type Uint32 struct {
 	addr uint
 	a Allocator
@@ -25,6 +75,31 @@ func (v Uint32) Get() (uint32, error) {
 func (v Uint32) Set(val uint32) error {
 	byt := make([]byte, Uint32Size)
 	Uint32ToBytes(val, byt)
+	return v.a.Set(v.addr, byt)
+}
+type Uint64 struct {
+	addr uint
+	a Allocator
+}
+
+func (v Uint64) Addr() uint {
+	return v.addr
+}
+
+func (v Uint64) SizeOf() uint {
+	return Uint64Size
+}
+
+func (v Uint64) Get() (uint64, error) {
+	byt := make([]byte, Uint64Size)
+	err := v.a.Get(v.addr, byt)
+	return BytesToUint64(byt), err
+
+}
+
+func (v Uint64) Set(val uint64) error {
+	byt := make([]byte, Uint64Size)
+	Uint64ToBytes(val, byt)
 	return v.a.Set(v.addr, byt)
 }
 type Int8 struct {
@@ -127,56 +202,6 @@ func (v Int64) Set(val int64) error {
 	Int64ToBytes(val, byt)
 	return v.a.Set(v.addr, byt)
 }
-type Uint16 struct {
-	addr uint
-	a Allocator
-}
-
-func (v Uint16) Addr() uint {
-	return v.addr
-}
-
-func (v Uint16) SizeOf() uint {
-	return Uint16Size
-}
-
-func (v Uint16) Get() (uint16, error) {
-	byt := make([]byte, Uint16Size)
-	err := v.a.Get(v.addr, byt)
-	return BytesToUint16(byt), err
-
-}
-
-func (v Uint16) Set(val uint16) error {
-	byt := make([]byte, Uint16Size)
-	Uint16ToBytes(val, byt)
-	return v.a.Set(v.addr, byt)
-}
-type Uint64 struct {
-	addr uint
-	a Allocator
-}
-
-func (v Uint64) Addr() uint {
-	return v.addr
-}
-
-func (v Uint64) SizeOf() uint {
-	return Uint64Size
-}
-
-func (v Uint64) Get() (uint64, error) {
-	byt := make([]byte, Uint64Size)
-	err := v.a.Get(v.addr, byt)
-	return BytesToUint64(byt), err
-
-}
-
-func (v Uint64) Set(val uint64) error {
-	byt := make([]byte, Uint64Size)
-	Uint64ToBytes(val, byt)
-	return v.a.Set(v.addr, byt)
-}
 type Float32 struct {
 	addr uint
 	a Allocator
@@ -252,28 +277,30 @@ func (v Bool) Set(val bool) error {
 	BoolToBytes(val, byt)
 	return v.a.Set(v.addr, byt)
 }
-type Uint8 struct {
-	addr uint
-	a Allocator
+//go:proto clear
+
+//go:proto T=Uint,Int B=T.lower
+type Uint struct {
+	Uint64
 }
 
-func (v Uint8) Addr() uint {
-	return v.addr
+func (v Uint) Get() (uint, error) {
+	i, err := v.Uint64.Get()
+	return uint(i), err
 }
 
-func (v Uint8) SizeOf() uint {
-	return Uint8Size
+func (v Uint) Set(val uint) error {
+	return v.Uint64.Set(uint64(val))
+}
+type Int struct {
+	Uint64
 }
 
-func (v Uint8) Get() (uint8, error) {
-	byt := make([]byte, Uint8Size)
-	err := v.a.Get(v.addr, byt)
-	return BytesToUint8(byt), err
-
+func (v Int) Get() (int, error) {
+	i, err := v.Uint64.Get()
+	return int(i), err
 }
 
-func (v Uint8) Set(val uint8) error {
-	byt := make([]byte, Uint8Size)
-	Uint8ToBytes(val, byt)
-	return v.a.Set(v.addr, byt)
+func (v Int) Set(val int) error {
+	return v.Uint64.Set(uint64(val))
 }

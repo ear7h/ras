@@ -24,7 +24,7 @@ func (p TPointer) Addr() uint {
 }
 
 func (p TPointer) SizeOf() uint {
-	return Uint64Size
+	return PointerSize
 }
 
 func (p TPointer) Get() (uint, error) {
@@ -46,4 +46,3 @@ func (p TPointer) ToArr() (TArray, error) {
 		a: p.a,
 	}, nil
 }
-//go:proto T:/

@@ -2,10 +2,51 @@
 package ras
 
 
-
-
-
 //go:proto T=Builtin B=T.lower
+type UintArray struct {
+	addr uint
+	a    Allocator
+}
+
+// fill dst with uint's with an offset of o
+func (arr UintArray) Get(dst []uint, o uint) (error) {
+	byt := make([]byte, len(dst)*UintSize)
+
+	err := arr.a.Get((arr.addr+o)*UintSize, byt)
+	if err != nil {
+		return err
+	}
+
+	for i := range dst {
+		dst[i] = BytesToUint(byt[i*UintSize:(i+1)*UintSize])
+	}
+
+	return nil
+}
+
+// place src's uint's into storage with an offset of o
+func (arr UintArray) Set(src []uint, o uint) error {
+	byt := make([]byte, len(src)*UintSize)
+
+	for i, v := range src {
+		UintToBytes(v, byt[i*UintSize:(i+1)*UintSize])
+	}
+
+	return arr.a.Set((arr.addr+o)*UintSize, byt)
+}
+
+
+func (arr UintArray)GetI(i uint)  (uint, error) {
+	dst := make([]uint, 1)
+	err := arr.Get(dst, i)
+	return dst[0], err
+}
+
+func (arr UintArray)SetI(val uint, i uint)  error {
+	src := []uint{val}
+	err := arr.Get(src, i)
+	return err
+}
 type Uint8Array struct {
 	addr uint
 	a    Allocator
@@ -91,182 +132,6 @@ func (arr Uint16Array)GetI(i uint)  (uint16, error) {
 
 func (arr Uint16Array)SetI(val uint16, i uint)  error {
 	src := []uint16{val}
-	err := arr.Get(src, i)
-	return err
-}
-type Int16Array struct {
-	addr uint
-	a    Allocator
-}
-
-// fill dst with int16's with an offset of o
-func (arr Int16Array) Get(dst []int16, o uint) (error) {
-	byt := make([]byte, len(dst)*Int16Size)
-
-	err := arr.a.Get((arr.addr+o)*Int16Size, byt)
-	if err != nil {
-		return err
-	}
-
-	for i := range dst {
-		dst[i] = BytesToInt16(byt[i*Int16Size:(i+1)*Int16Size])
-	}
-
-	return nil
-}
-
-// place src's int16's into storage with an offset of o
-func (arr Int16Array) Set(src []int16, o uint) error {
-	byt := make([]byte, len(src)*Int16Size)
-
-	for i, v := range src {
-		Int16ToBytes(v, byt[i*Int16Size:(i+1)*Int16Size])
-	}
-
-	return arr.a.Set((arr.addr+o)*Int16Size, byt)
-}
-
-
-func (arr Int16Array)GetI(i uint)  (int16, error) {
-	dst := make([]int16, 1)
-	err := arr.Get(dst, i)
-	return dst[0], err
-}
-
-func (arr Int16Array)SetI(val int16, i uint)  error {
-	src := []int16{val}
-	err := arr.Get(src, i)
-	return err
-}
-type Float64Array struct {
-	addr uint
-	a    Allocator
-}
-
-// fill dst with float64's with an offset of o
-func (arr Float64Array) Get(dst []float64, o uint) (error) {
-	byt := make([]byte, len(dst)*Float64Size)
-
-	err := arr.a.Get((arr.addr+o)*Float64Size, byt)
-	if err != nil {
-		return err
-	}
-
-	for i := range dst {
-		dst[i] = BytesToFloat64(byt[i*Float64Size:(i+1)*Float64Size])
-	}
-
-	return nil
-}
-
-// place src's float64's into storage with an offset of o
-func (arr Float64Array) Set(src []float64, o uint) error {
-	byt := make([]byte, len(src)*Float64Size)
-
-	for i, v := range src {
-		Float64ToBytes(v, byt[i*Float64Size:(i+1)*Float64Size])
-	}
-
-	return arr.a.Set((arr.addr+o)*Float64Size, byt)
-}
-
-
-func (arr Float64Array)GetI(i uint)  (float64, error) {
-	dst := make([]float64, 1)
-	err := arr.Get(dst, i)
-	return dst[0], err
-}
-
-func (arr Float64Array)SetI(val float64, i uint)  error {
-	src := []float64{val}
-	err := arr.Get(src, i)
-	return err
-}
-type BoolArray struct {
-	addr uint
-	a    Allocator
-}
-
-// fill dst with bool's with an offset of o
-func (arr BoolArray) Get(dst []bool, o uint) (error) {
-	byt := make([]byte, len(dst)*BoolSize)
-
-	err := arr.a.Get((arr.addr+o)*BoolSize, byt)
-	if err != nil {
-		return err
-	}
-
-	for i := range dst {
-		dst[i] = BytesToBool(byt[i*BoolSize:(i+1)*BoolSize])
-	}
-
-	return nil
-}
-
-// place src's bool's into storage with an offset of o
-func (arr BoolArray) Set(src []bool, o uint) error {
-	byt := make([]byte, len(src)*BoolSize)
-
-	for i, v := range src {
-		BoolToBytes(v, byt[i*BoolSize:(i+1)*BoolSize])
-	}
-
-	return arr.a.Set((arr.addr+o)*BoolSize, byt)
-}
-
-
-func (arr BoolArray)GetI(i uint)  (bool, error) {
-	dst := make([]bool, 1)
-	err := arr.Get(dst, i)
-	return dst[0], err
-}
-
-func (arr BoolArray)SetI(val bool, i uint)  error {
-	src := []bool{val}
-	err := arr.Get(src, i)
-	return err
-}
-type UintArray struct {
-	addr uint
-	a    Allocator
-}
-
-// fill dst with uint's with an offset of o
-func (arr UintArray) Get(dst []uint, o uint) (error) {
-	byt := make([]byte, len(dst)*UintSize)
-
-	err := arr.a.Get((arr.addr+o)*UintSize, byt)
-	if err != nil {
-		return err
-	}
-
-	for i := range dst {
-		dst[i] = BytesToUint(byt[i*UintSize:(i+1)*UintSize])
-	}
-
-	return nil
-}
-
-// place src's uint's into storage with an offset of o
-func (arr UintArray) Set(src []uint, o uint) error {
-	byt := make([]byte, len(src)*UintSize)
-
-	for i, v := range src {
-		UintToBytes(v, byt[i*UintSize:(i+1)*UintSize])
-	}
-
-	return arr.a.Set((arr.addr+o)*UintSize, byt)
-}
-
-
-func (arr UintArray)GetI(i uint)  (uint, error) {
-	dst := make([]uint, 1)
-	err := arr.Get(dst, i)
-	return dst[0], err
-}
-
-func (arr UintArray)SetI(val uint, i uint)  error {
-	src := []uint{val}
 	err := arr.Get(src, i)
 	return err
 }
@@ -446,6 +311,50 @@ func (arr Int8Array)SetI(val int8, i uint)  error {
 	err := arr.Get(src, i)
 	return err
 }
+type Int16Array struct {
+	addr uint
+	a    Allocator
+}
+
+// fill dst with int16's with an offset of o
+func (arr Int16Array) Get(dst []int16, o uint) (error) {
+	byt := make([]byte, len(dst)*Int16Size)
+
+	err := arr.a.Get((arr.addr+o)*Int16Size, byt)
+	if err != nil {
+		return err
+	}
+
+	for i := range dst {
+		dst[i] = BytesToInt16(byt[i*Int16Size:(i+1)*Int16Size])
+	}
+
+	return nil
+}
+
+// place src's int16's into storage with an offset of o
+func (arr Int16Array) Set(src []int16, o uint) error {
+	byt := make([]byte, len(src)*Int16Size)
+
+	for i, v := range src {
+		Int16ToBytes(v, byt[i*Int16Size:(i+1)*Int16Size])
+	}
+
+	return arr.a.Set((arr.addr+o)*Int16Size, byt)
+}
+
+
+func (arr Int16Array)GetI(i uint)  (int16, error) {
+	dst := make([]int16, 1)
+	err := arr.Get(dst, i)
+	return dst[0], err
+}
+
+func (arr Int16Array)SetI(val int16, i uint)  error {
+	src := []int16{val}
+	err := arr.Get(src, i)
+	return err
+}
 type Int32Array struct {
 	addr uint
 	a    Allocator
@@ -575,6 +484,94 @@ func (arr Float32Array)GetI(i uint)  (float32, error) {
 
 func (arr Float32Array)SetI(val float32, i uint)  error {
 	src := []float32{val}
+	err := arr.Get(src, i)
+	return err
+}
+type Float64Array struct {
+	addr uint
+	a    Allocator
+}
+
+// fill dst with float64's with an offset of o
+func (arr Float64Array) Get(dst []float64, o uint) (error) {
+	byt := make([]byte, len(dst)*Float64Size)
+
+	err := arr.a.Get((arr.addr+o)*Float64Size, byt)
+	if err != nil {
+		return err
+	}
+
+	for i := range dst {
+		dst[i] = BytesToFloat64(byt[i*Float64Size:(i+1)*Float64Size])
+	}
+
+	return nil
+}
+
+// place src's float64's into storage with an offset of o
+func (arr Float64Array) Set(src []float64, o uint) error {
+	byt := make([]byte, len(src)*Float64Size)
+
+	for i, v := range src {
+		Float64ToBytes(v, byt[i*Float64Size:(i+1)*Float64Size])
+	}
+
+	return arr.a.Set((arr.addr+o)*Float64Size, byt)
+}
+
+
+func (arr Float64Array)GetI(i uint)  (float64, error) {
+	dst := make([]float64, 1)
+	err := arr.Get(dst, i)
+	return dst[0], err
+}
+
+func (arr Float64Array)SetI(val float64, i uint)  error {
+	src := []float64{val}
+	err := arr.Get(src, i)
+	return err
+}
+type BoolArray struct {
+	addr uint
+	a    Allocator
+}
+
+// fill dst with bool's with an offset of o
+func (arr BoolArray) Get(dst []bool, o uint) (error) {
+	byt := make([]byte, len(dst)*BoolSize)
+
+	err := arr.a.Get((arr.addr+o)*BoolSize, byt)
+	if err != nil {
+		return err
+	}
+
+	for i := range dst {
+		dst[i] = BytesToBool(byt[i*BoolSize:(i+1)*BoolSize])
+	}
+
+	return nil
+}
+
+// place src's bool's into storage with an offset of o
+func (arr BoolArray) Set(src []bool, o uint) error {
+	byt := make([]byte, len(src)*BoolSize)
+
+	for i, v := range src {
+		BoolToBytes(v, byt[i*BoolSize:(i+1)*BoolSize])
+	}
+
+	return arr.a.Set((arr.addr+o)*BoolSize, byt)
+}
+
+
+func (arr BoolArray)GetI(i uint)  (bool, error) {
+	dst := make([]bool, 1)
+	err := arr.Get(dst, i)
+	return dst[0], err
+}
+
+func (arr BoolArray)SetI(val bool, i uint)  error {
+	src := []bool{val}
 	err := arr.Get(src, i)
 	return err
 }

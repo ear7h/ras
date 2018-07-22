@@ -1,3 +1,5 @@
+//+build none
+
 package ras
 
 import "math"
