@@ -167,6 +167,7 @@ func (h Allocator) getHeadPtr() (uint, error) {
 
 // sets the header corresponding with the address
 func (h Allocator) setHdr(addr uint, blk blockHeader) error {
+	fmt.Println("setting ", addr, blk)
 	return h.Set(addr-blockHeaderLen, blk.MarshalBinary())
 }
 
@@ -188,6 +189,7 @@ func (h Allocator) getHdr(addr uint) (blockHeader, error) {
 // addr is the address of a storage block
 // size is the size of the new storage block
 func (h Allocator) insertBlockAfter(addr, size uint) error {
+	fmt.Println("inseting block after ", addr, " size ", size)
 	if addr == usableOffset {
 		next, err := h.getHeadPtr()
 		if err != nil {
@@ -222,7 +224,7 @@ func (h Allocator) insertBlockAfter(addr, size uint) error {
 		next: hdr1.next,
 	}
 
-	hdr1.next = addr + hdr1.len
+	hdr1.next = addr + hdr1.len + blockHeaderLen
 
 	err = h.setHdr(addr, hdr1)
 	if err != nil {
@@ -262,8 +264,17 @@ func (h Allocator) removeBlockAfter(addr uint) error {
 func (h *Allocator) tsafeManOp(op int, arg uint) (r uint, err error) {
 	h.mlock.Lock()
 	defer h.mlock.Unlock()
+	var str string
+	switch op {
+	case manAlloc:
+		str = "alloc"
+	case manFree:
+		str = "free"
+	case manResize:
+		str = "resize"
+	}
 
-	fmt.Println("man op ", op)
+	fmt.Println("man op ", str, "arg: ", arg)
 
 	switch op {
 	case manAlloc:
@@ -304,7 +315,7 @@ func (h Allocator) alloc(size uint) (addr uint, err error) {
 		}
 
 		p = caddr
-		pend = caddr + blk.len - 1
+		pend = caddr + blk.len
 
 		return nil
 	})
@@ -327,6 +338,7 @@ func (h Allocator) alloc(size uint) (addr uint, err error) {
 			return NullPtr, fmt.Errorf("no space e%d:c%d:s%d+%d", pend, h.cap, size, blockHeaderLen)
 		}
 	L:
+		fmt.Println("pend", pend)
 		addr = pend + blockHeaderLen
 		err = h.insertBlockAfter(p, size)
 		return addr, err
@@ -523,4 +535,20 @@ func (h *Allocator) Set(addr uint, src []byte) (err error) {
 	}
 
 	return h.tsafeIoOp(ioWrite, src, addr)
+}
+
+func (h Allocator) Bsize(addr uint) (size uint, err error) {
+	err = h.traverse(func(caddr uint, blk blockHeader) error {
+		if caddr == addr {
+			size = blk.len
+			return trBreakIter
+		}
+		return nil
+	})
+
+	if err == trBreakIter || err == trEndIter {
+		err = nil
+	}
+
+	return size, err
 }

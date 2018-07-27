@@ -2,6 +2,8 @@
 
 package ras
 
+import "errors"
+
 // some builtin type
 type t int
 
@@ -13,8 +15,9 @@ type T interface{
 	Set(v t) error
 }
 
+// note that arrays wrap the TPointer type
+// therefore getting the pointer is done through (TArray).TPointer.Get()
 type TArray interface {
-	// returns size of pointer (8)
 	SizeOf() uint
 	Addr() uint
 
@@ -24,8 +27,14 @@ type TArray interface {
 	GetI(i uint) (t, error)
 	SetI(i uint, v t) error
 
-	Range(offset uint, func(i uint, v t) error) error
+	// if f returns an error, iteration is stopped
+	// and the error is also returned by Range, unless
+	// the error is ErrStopIter
+	Range(offset uint, f TIterator) error
 }
+
+type TIterator = func(i uint, k t) error
+var ErrStopIter = errors.New("stop iter")
 
 // The in-storage representation of an array
 type TArrayProto struct {
@@ -35,7 +44,7 @@ type TArrayProto struct {
 type TSlice interface {
 	TArray
 
-	Len(uint)
+	Len() uint
 	Append(v T) error
 }
 

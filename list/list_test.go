@@ -9,6 +9,7 @@ import (
 	"reflect"
 
 	"github.com/ear7h/ras/list"
+	"github.com/ear7h/ras"
 )
 
 func errEq(e1, e2 error) bool {
@@ -129,6 +130,8 @@ func TestListResize(t *testing.T) {
 	}
 }
 
+const allocToken = 69
+
 func TestAllocAndFree(t *testing.T) {
 	const (
 		verbAlloc  = iota
@@ -159,12 +162,19 @@ func TestAllocAndFree(t *testing.T) {
 
 			switch v.verb {
 			case verbAlloc:
-				_, err = heap.Alloc(v.val)
+				var addr uint
+				addr, err = heap.Alloc(v.val)
+				fmt.Println("alloc addr: ", addr)
+				if err == nil {
+					err = heap.Set(addr, []byte{allocToken})
+				}
 			case verbFree:
 				err = heap.Free(v.val)
 			case verbResize:
 				err = heap.Resize(v.val)
 			}
+
+			fmt.Println(dumpFile("test.heap"))
 
 			if err != nil {
 				break
@@ -192,9 +202,9 @@ func TestAllocAndFree(t *testing.T) {
 			},
 			res: append(list.Magic[:],
 				14, 0, 0, 0, // head ptr
-				2, 0, 0, 0, // header.len
-				0, 0, 0, 0, // header.next
-				0, 0), // val
+				2, 0, 0, 0,  // header.len
+				0, 0, 0, 0,  // header.next
+				allocToken, 0), // val
 			err: nil,
 		},
 		"simple free": {
@@ -204,10 +214,95 @@ func TestAllocAndFree(t *testing.T) {
 				{verbFree, 14},
 			},
 			res: append(list.Magic[:],
-			0, 0, 0, 0, // head ptr
-			2, 0, 0, 0, // header.len
-			0, 0, 0, 0, // header.next
-			0, 0), // val
+				0, 0, 0, 0, // head ptr
+				2, 0, 0, 0, // header.len
+				0, 0, 0, 0, // header.next
+				allocToken, 0), // val
+			err: nil,
+		},
+		"multi alloc": {
+			manips: []manip{
+				{verbResize, 32},
+				{verbAlloc, 1},
+				{verbAlloc, 1},
+			},
+			res: append(list.Magic[:],
+				14, 0, 0, 0, // head ptr
+				1, 0, 0, 0,  // header.len
+				23, 0, 0, 0, // header.next
+				allocToken,
+				1, 0, 0, 0, // header.len
+				0, 0, 0, 0, // header.next
+				allocToken,
+				0, 0, 0, 0,
+				0, 0, 0, 0), // val
+			err: nil,
+		},
+		"multi alloc 2": {
+			manips: []manip{
+				{verbResize, 48},
+				{verbAlloc, 1},
+				{verbAlloc, 1},
+				{verbAlloc, 1},
+			},
+			res: append(list.Magic[:],
+				14, 0, 0, 0, // head ptr
+				1, 0, 0, 0,  // header.len
+				23, 0, 0, 0, // header.next
+				allocToken,
+				1, 0, 0, 0, // header.len
+				32, 0, 0, 0, // header.next
+				allocToken,
+				1, 0, 0, 0, // header.len
+				0, 0, 0, 0, // header.next
+				allocToken,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			err: nil,
+		},
+		"multi alloc 2 and free": {
+			manips: []manip{
+				{verbResize, 48},
+				{verbAlloc, 1},
+				{verbAlloc, 1},
+				{verbAlloc, 1},
+				{verbFree, 23},
+			},
+			res: append(list.Magic[:],
+				14, 0, 0, 0, // head ptr
+				1, 0, 0, 0,  // header.len
+				32, 0, 0, 0, // header.next
+				allocToken,
+				1, 0, 0, 0, // header.len
+				32, 0, 0, 0, // header.next
+				allocToken,
+				1, 0, 0, 0, // header.len
+				0, 0, 0, 0, // header.next
+				allocToken,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			err: nil,
+		},
+		"multi alloc 2, free, alloc": {
+			manips: []manip{
+				{verbResize, 48},
+				{verbAlloc, 1},
+				{verbAlloc, 1},
+				{verbAlloc, 1},
+				{verbFree, 23},
+				{verbAlloc, 1},
+			},
+			// same as multi alloc 2
+			res: append(list.Magic[:],
+				14, 0, 0, 0, // head ptr
+				1, 0, 0, 0,  // header.len
+				23, 0, 0, 0, // header.next
+				allocToken,
+				1, 0, 0, 0, // header.len
+				32, 0, 0, 0, // header.next
+				allocToken,
+				1, 0, 0, 0, // header.len
+				0, 0, 0, 0, // header.next
+				allocToken,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 			err: nil,
 		},
 	}
@@ -217,4 +312,12 @@ func TestAllocAndFree(t *testing.T) {
 			fn(v, t)
 		})
 	}
+}
+
+func TestInterface(t *testing.T) {
+	rt := ras.Runtime{
+		Allocator: &list.Allocator{},
+	}
+
+	rt.Cap()
 }

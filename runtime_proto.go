@@ -13,7 +13,6 @@ func (r Runtime) NewT() (ret T, err error) {
 }
 
 func (r Runtime) T(addr uint) (ret T) {
-	ret.a = r
-	ret.addr = addr
+	ret.init(addr, r)
 	return
 }

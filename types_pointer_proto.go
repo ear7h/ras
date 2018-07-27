@@ -5,44 +5,58 @@ package ras
 //go:proto ignore
 type T Int
 
-//go:proto ignore
-type TArray IntArray
-
-
-//go:proto T=Builtin
-type TPointer struct {
-	addr uint
-	a Allocator
+type UnsafePointer struct {
+	Uint
 }
 
-func (p TPointer) uint() Uint {
-	return Uint{Uint64{addr: p.addr, a: p.a}}
+func (p UnsafePointer) ptr() UnsafePointer {
+	return p
 }
 
-func (p TPointer) Addr() uint {
+func (p UnsafePointer) Addr() uint {
 	return p.addr
 }
 
-func (p TPointer) SizeOf() uint {
+func (_ UnsafePointer) SizeOf() uint {
 	return PointerSize
 }
 
-func (p TPointer) Get() (uint, error) {
-	return p.uint().Get()
+func (p UnsafePointer) Get() (uint, error) {
+	return p.Uint.Get()
+}
+
+func (p UnsafePointer) Set(val uint) error {
+	return p.Uint.Set(val)
+}
+
+//go:proto T=UintN,IntN,Floats,Bool
+type TPointer struct {
+	UnsafePointer
+}
+
+func (p TPointer) Get() (T, error) {
+	addr, err := p.UnsafePointer.Get()
+
+	return T{variable{addr, p.a}}, err
 }
 
 func (p TPointer) Set(val T) error {
-	return p.uint().Set(val.addr)
+	return p.UnsafePointer.Set(val.addr)
+}
+//go:proto clear
+
+//go:proto T=Uint,Int
+type TPointer struct {
+	UnsafePointer
 }
 
-func (p TPointer) ToArr() (TArray, error) {
-	ptr, err := p.Get()
-	if err != nil {
-		return TArray{}, err
-	}
+func (p TPointer) Get() (T, error) {
+	addr, err := p.UnsafePointer.Get()
 
-	return TArray{
-		addr: ptr,
-		a: p.a,
-	}, nil
+	return T{Uint64{variable{addr, p.a}}}, err
 }
+
+func (p TPointer) Set(val T) error {
+	return p.UnsafePointer.Set(val.addr)
+}
+//go:proto clear

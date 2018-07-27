@@ -21,6 +21,14 @@ func Uint8ToBytes(i uint8, byt []byte) {
 	byt[0] = byte(i)
 }
 
+func BytesToUint(byt []byte) uint {
+	return uint(BytesToUint64(byt))
+}
+
+func UintToBytes(i uint, byt []byte) {
+	Uint64ToBytes(uint64(i), byt)
+}
+
 //go:proto T=Uint16,Uint32,Uint64 B=T.lower S=T.sizebits
 func BytesToT(byt []byte) B {
 	return binary.LittleEndian.UintS(byt)
@@ -35,7 +43,7 @@ func TToBytes(i B, byt []byte) {
 // int
 //
 
-//go:proto T=IntN B=T.lower S=T.sizebits
+//go:proto T=Ints B=T.lower S=T.sizebits
 func BytesToT(byt []byte) B {
 	return B(BytesToUintS(byt))
 }
@@ -49,6 +57,7 @@ func TToBytes(i B, byt []byte) {
 // float
 //
 
+// camel case is necessary for go-proto
 var float32Bits = math.Float32bits
 var float32FromBits = math.Float32frombits
 var float64Bits = math.Float64bits

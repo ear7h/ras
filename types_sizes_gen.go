@@ -15,7 +15,7 @@ const (
 	Float32Size = 4
 	Float64Size = 8
 	//go:proto clear
-	UintSize   = Uint64Size
-	IntSize   = Int64Size
+	UintSize    = Uint64Size
+	IntSize     = Int64Size
 	PointerSize = Uint64Size
 )
